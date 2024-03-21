@@ -50,7 +50,7 @@ const Home: React.FC = () => {
       const result = Papa.parse<DataRow>(text, { header: true });
       result.data.forEach((row) => {
         const url = row.URL?.trim();
-        if (url) {
+        if (url?.includes("amazon")) {
           mergedData[url] = { ...mergedData[url], ...row };
         }
       });
