@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import Papa from "papaparse";
 import { saveAs } from "file-saver";
+import { Button } from "@/components/ui/button";
 
 interface DataRow {
   [key: string]: string;
@@ -14,7 +15,14 @@ const Home: React.FC = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const fileList = Array.from(event.target.files);
-      setFiles(fileList);
+      setFiles((prevFiles) => [...prevFiles, ...fileList]);
+    }
+  };
+
+  const clearFiles = () => {
+    setFiles([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -23,7 +31,7 @@ const Home: React.FC = () => {
     event.stopPropagation();
     if (event.dataTransfer.files) {
       const fileList = Array.from(event.dataTransfer.files);
-      setFiles(fileList);
+      setFiles((prevFiles) => [...prevFiles, ...fileList]);
     }
   }, []);
 
@@ -50,7 +58,7 @@ const Home: React.FC = () => {
       const result = Papa.parse<DataRow>(text, { header: true });
       result.data.forEach((row) => {
         const url = row.URL?.trim();
-        if (url?.includes("amazon")) {
+        if (url?.includes("amazon") && row.Body?.length > 1) {
           mergedData[url] = { ...mergedData[url], ...row };
         }
       });
@@ -82,14 +90,16 @@ const Home: React.FC = () => {
             className="hidden"
           />
         </div>
-        <div className="flex justify-center">
-          <button
-            className="bg-sky-600 p-6 m-4 rounded-xl font-semibold"
-            type="submit"
-          >
-            Merge and Download CSV
-          </button>
-        </div>
+        {files.length ? (
+          <div className="flex justify-center">
+            <Button
+              className="bg-sky-600 hover:bg-sky-700 p-8 m-4 rounded-xl font-semibold"
+              type="submit"
+            >
+              Merge and Download CSV
+            </Button>
+          </div>
+        ) : null}{" "}
       </form>
       {files.length > 0 && (
         <div className="grow flex flex-col justify-center items-center">
@@ -103,6 +113,14 @@ const Home: React.FC = () => {
                 </li>
               ))}
             </ul>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-8"
+              onClick={clearFiles}
+            >
+              Clear files
+            </Button>
           </div>
         </div>
       )}
